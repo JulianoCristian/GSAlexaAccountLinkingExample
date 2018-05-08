@@ -1,0 +1,79 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<title>Standard User Login</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+	</head>
+	<body>
+		<table>
+			<tr>
+				<td>Username:</td>
+				<td><input type="text" id="username" /></td>
+			</tr>
+			<tr>
+				<td>Password:</td>
+				<td><input type="password" id="password" /></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><button onClick="login();">Login</button></td>
+		</table>
+
+		<script type="text/javascript" src="credentials.js"></script>
+		<script type="text/javascript" src="sdk/gamesparks.js"></script>
+		<script type="text/javascript" src="sdk/gamesparks-functions.js"></script>
+		<script type="text/javascript" src="sdk/hmac-sha256.js"></script>
+		<script type="text/javascript">
+
+			initRequestParams = {
+				"scope": getParameterByName('scope'),
+				"state": getParameterByName('state'),
+				"client_id": getParameterByName('client_id'),
+				"response_type": getParameterByName('response_type')
+			};
+
+			console.log(initRequestParams);
+
+			var gamesparks = new GameSparks();
+			gamesparks.initPreview({
+				key: credentials.apiKey, 
+				secret: credentials.apiSecret,
+				credential: credentials.apiCredential,
+				onNonce: function (nonce) {
+					return CryptoJS.enc.Base64.stringify( CryptoJS.HmacSHA256(nonce, credentials.apiSecret));
+				},
+				onInit: console.log("Initialised"),
+				onMessage: console.log("onMessage"),
+				logger: console.log
+			});
+
+			function login () {
+				gamesparks.authenticationRequest(
+					document.getElementById('username').value,
+					document.getElementById('password').value, function (res) {
+						console.log(JSON.stringify(res));
+						if (res.error) console.log("Login Failed.");
+						else window.location = getRedirectUrl(initRequestParams.state, res.userId);
+					});
+
+				function getRedirectUrl (state, token) {
+					return "https://alexa.amazon.co.jp/spa/skill/account-linking-status.html"
+						+ "?vendorId=" + credentials.alexaVendorId
+						+ "&state=" + state
+						+ "&access_token=" + token
+						+ "&token_type=" + "Bearer";
+				}
+			}
+
+			function getParameterByName(name, url) {
+			    if (!url) url = window.location.href;
+			    name = name.replace(/[\[\]]/g, "\\$&");
+			    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+			        results = regex.exec(url);
+			    if (!results) return null;
+			    if (!results[2]) return '';
+			    return decodeURIComponent(results[2].replace(/\+/g, " "));
+			}
+		</script>
+	</body>
+</html>
