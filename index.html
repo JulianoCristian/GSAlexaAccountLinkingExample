@@ -3,6 +3,7 @@
 	<head>
 		<title>Standard User Login</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<body>
 		<table>
@@ -32,8 +33,6 @@
 				"response_type": getParameterByName('response_type')
 			};
 
-			console.log(initRequestParams);
-
 			var gamesparks = new GameSparks();
 			gamesparks.initPreview({
 				key: credentials.apiKey, 
@@ -56,12 +55,13 @@
 						else window.location = getRedirectUrl(initRequestParams.state, res.userId);
 					});
 
+				// This forms the url required for the Implicit Grant
 				function getRedirectUrl (state, token) {
 					return "https://alexa.amazon.co.jp/spa/skill/account-linking-status.html"
 						+ "?vendorId=" + credentials.alexaVendorId
-						+ "&state=" + state
+						+ "#state=" + state
 						+ "&access_token=" + token
-						+ "&token_type=" + "Bearer";
+						+ "&token_type=Bearer";
 				}
 			}
 
